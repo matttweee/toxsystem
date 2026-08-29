@@ -1,13 +1,15 @@
-import {db,ready,json} from '../../_lib/tox-db.js';
-const V={contract:'TOX-DEMO-CONTRACT-v1.1-PENDING-COMPANY-REG',regulation:'TOX-DEMO-RULES-v1.1',privacy:'TOX-PRIVACY-v1.1'};
+const SUPABASE_URL='https://yfshvjxucvmyvahcwczx.supabase.co';
+const SUPABASE_KEY='sb_publishable_5cfq5V51rRtbd031ELhFzw_9T2pAK1y';
+function json(res,status,data){res.status(status).setHeader('Content-Type','application/json');res.end(JSON.stringify(data))}
+async function rpc(name,body){const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await r.text();if(!r.ok)throw new Error(`${r.status}:${text}`);return text?JSON.parse(text):null}
 export default async function handler(req,res){
  if(req.method!=='POST') return json(res,405,{error:'METHOD_NOT_ALLOWED'});
- if(!ready()) return json(res,503,{error:'BACKEND_NOT_CONFIGURED'});
- if(process.env.TOX_LEGAL_FINAL!=='true') return json(res,423,{error:'LEGAL_NOT_FINAL',message:'Contratto bloccato finché i dati societari definitivi non sono registrati.'});
- try{const id=String(req.body?.client_id||'');const c=await db.getClientByPublicId(id);if(!c)return json(res,404,{error:'CLIENT_NOT_FOUND'});
- await db.addAcceptance({client_id:c.id,contract_version:V.contract,regulation_version:V.regulation,privacy_version:V.privacy,user_agent:String(req.headers['user-agent']||'').slice(0,500)});
- const now=new Date(), exp=new Date(now.getTime()+42*864e5), conv=new Date(exp.getTime()+45*864e5);
- const next=c.demo_started_at?c:await db.patchClient(c.id,{status:'DEMO_ACTIVE',demo_started_at:now.toISOString(),demo_expires_at:exp.toISOString(),conversion_deadline:conv.toISOString()});
- await db.addAudit({client_id:c.id,event_type:'DOCUMENTS_ACCEPTED',payload:{versions:V}});
- return json(res,200,{client_id:next.client_id,status:next.status,demo_expires_at:next.demo_expires_at,conversion_deadline:next.conversion_deadline});
- }catch(e){return json(res,500,{error:'ACCEPT_FAILED',detail:String(e.message||e).slice(0,180)})}}
+ try{
+   const id=String(req.body?.client_id||'').trim();
+   if(!id) return json(res,400,{error:'CLIENT_ID_REQUIRED'});
+   const rows=await rpc('tox_demo_accept',{p_client_id:id});
+   const client=Array.isArray(rows)?rows[0]:rows;
+   if(!client) return json(res,404,{error:'CLIENT_NOT_FOUND'});
+   return json(res,200,{...client,documents:{contract:'TOX-DEMO-CONTRACT-v1.0',regulation:'TOX-DEMO-RULES-v1.2',privacy:'TOX-PRIVACY-v1.2'},download_url:`/api/public/demo/download?client_id=${encodeURIComponent(client.client_id)}`});
+ }catch(e){const d=String(e.message||e);return json(res,d.includes('CLIENT_NOT_FOUND')?404:500,{error:d.includes('CLIENT_NOT_FOUND')?'CLIENT_NOT_FOUND':'ACCEPT_FAILED',detail:d.slice(0,220)})}
+}
