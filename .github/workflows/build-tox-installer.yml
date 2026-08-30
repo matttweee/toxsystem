@@ -27,7 +27,8 @@ jobs:
           $b64 = Get-Content 'downloads/TOX_CLIENT_DEMO_V003.zip.b64' -Raw
           [IO.File]::WriteAllBytes('TOX_CLIENT_DEMO_V003.zip',[Convert]::FromBase64String($b64.Trim()))
           Expand-Archive -Path 'TOX_CLIENT_DEMO_V003.zip' -DestinationPath 'buildsrc' -Force
-          Copy-Item 'buildsrc/TOX_CLIENT_DEMO_V003/*' 'appsrc' -Recurse -Force
+          Copy-Item 'buildsrc/TOX_CLIENT_DEMO_V003' 'appsrc' -Recurse -Force
+          if (-not (Test-Path 'appsrc/tox_client/static/index.html')) { throw 'Client static files missing after extraction' }
 
       - name: Install build dependencies
         shell: pwsh
