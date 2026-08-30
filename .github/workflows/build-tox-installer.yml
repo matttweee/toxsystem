@@ -29,6 +29,10 @@ jobs:
           Expand-Archive -Path 'TOX_CLIENT_DEMO_V003.zip' -DestinationPath 'buildsrc' -Force
           Copy-Item 'buildsrc/TOX_CLIENT_DEMO_V003' 'appsrc' -Recurse -Force
           if (-not (Test-Path 'appsrc/tox_client/static/index.html')) { throw 'Client static files missing after extraction' }
+          $app = Get-Content 'appsrc/tox_client/app.py' -Raw
+          $app = $app.Replace("uvicorn.run(app,host='127.0.0.1',port=8791,log_level='warning')", "uvicorn.run(app,host='127.0.0.1',port=8791,log_level='warning',log_config=None,access_log=False)")
+          Set-Content -Path 'appsrc/tox_client/app.py' -Value $app -Encoding UTF8
+          if ((Get-Content 'appsrc/tox_client/app.py' -Raw) -notmatch 'log_config=None') { throw 'Uvicorn packaged logging patch not applied' }
 
       - name: Install build dependencies
         shell: pwsh
@@ -57,7 +61,7 @@ jobs:
         shell: pwsh
         working-directory: appsrc
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --name TOX_SYSTEM --icon tox.ico --add-data 'tox_client/static;tox_client/static' --collect-all keyring --collect-all cryptography run.py
+          pyinstaller --noconfirm --clean --onedir --windowed --name TOX_SYSTEM --icon tox.ico --add-data 'tox_client/static;tox_client/static' --collect-all keyring --collect-all cryptography --hidden-import uvicorn.logging run.py
 
       - name: Build installer
         shell: pwsh
