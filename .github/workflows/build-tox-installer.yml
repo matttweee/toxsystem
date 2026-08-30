@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - '.github/workflows/build-tox-installer.yml'
+      - 'client-v006/**'
+      - 'logo-tox.svg'
   workflow_dispatch:
 permissions:
   contents: write
@@ -47,6 +49,24 @@ jobs:
         shell: pwsh
         working-directory: appsrc
         run: pyinstaller --noconfirm --clean --onedir --windowed --name TOX_SYSTEM_V006 --icon tox.ico --add-data 'tox_client/static;tox_client/static' --collect-all keyring --collect-all cryptography --hidden-import uvicorn.logging run.py
+      - name: Runtime smoke test
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path 'appsrc/dist/TOX_SYSTEM_V006/TOX_SYSTEM_V006.exe'
+          $p = Start-Process -FilePath $exe -PassThru
+          $ok = $false
+          try {
+            for ($i=0; $i -lt 30; $i++) {
+              Start-Sleep -Seconds 1
+              try {
+                $r = Invoke-RestMethod -Uri 'http://127.0.0.1:8791/api/status' -TimeoutSec 2
+                if ($null -ne $r.real_orders_possible -and $r.real_orders_possible -eq $false) { $ok = $true; break }
+              } catch {}
+            }
+            if (-not $ok) { throw 'TOX runtime smoke test failed: local status endpoint unavailable' }
+          } finally {
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          }
       - name: Build installer
         shell: pwsh
         run: |
