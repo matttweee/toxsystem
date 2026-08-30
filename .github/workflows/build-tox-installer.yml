@@ -21,14 +21,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Recreate client source
+      - name: Recreate V006 client source
         shell: pwsh
         run: |
-          $b64 = Get-Content 'downloads/TOX_CLIENT_DEMO_V003.zip.b64' -Raw
-          [IO.File]::WriteAllBytes('TOX_CLIENT_DEMO_V003.zip',[Convert]::FromBase64String($b64.Trim()))
-          Expand-Archive -Path 'TOX_CLIENT_DEMO_V003.zip' -DestinationPath 'buildsrc' -Force
+          $b64 = Get-Content 'downloads/TOX_CLIENT_DEMO_V006.zip.b64' -Raw
+          [IO.File]::WriteAllBytes('TOX_CLIENT_DEMO_V006.zip',[Convert]::FromBase64String($b64.Trim()))
+          Expand-Archive -Path 'TOX_CLIENT_DEMO_V006.zip' -DestinationPath 'buildsrc' -Force
           Copy-Item 'buildsrc/TOX_CLIENT_DEMO_V003' 'appsrc' -Recurse -Force
-          if (-not (Test-Path 'appsrc/tox_client/static/index.html')) { throw 'Client static files missing after extraction' }
+          if (-not (Test-Path 'appsrc/tox_client/static/index.html')) { throw 'Client static files missing' }
+          if (-not (Test-Path 'appsrc/tox_client/static/logo.svg')) { throw 'Official TOX logo missing' }
           $app = Get-Content 'appsrc/tox_client/app.py' -Raw
           $app = $app.Replace("uvicorn.run(app,host='127.0.0.1',port=8791,log_level='warning')", "uvicorn.run(app,host='127.0.0.1',port=8791,log_level='warning',log_config=None,access_log=False)")
           $waitPatch = @'
@@ -53,8 +54,9 @@ jobs:
           $app = $app.Replace('def run():', $waitPatch)
           Set-Content -Path 'appsrc/tox_client/app.py' -Value $app -Encoding UTF8
           $patched = Get-Content 'appsrc/tox_client/app.py' -Raw
-          if ($patched -notmatch 'log_config=None') { throw 'Uvicorn packaged logging patch not applied' }
-          if ($patched -notmatch '_tox_browser_open_when_ready') { throw 'Dashboard readiness patch not applied' }
+          if ($patched -notmatch 'log_config=None') { throw 'Uvicorn patch missing' }
+          if ($patched -notmatch '_tox_browser_open_when_ready') { throw 'Readiness patch missing' }
+          if ($patched -notmatch 'tox-demo-autobind') { throw 'Automatic UID binding missing' }
 
       - name: Install build dependencies
         shell: pwsh
@@ -64,40 +66,44 @@ jobs:
           pip install pyinstaller pillow
           choco install nsis -y --no-progress
 
-      - name: Create TOX icon
+      - name: Build official TOX icon
         shell: pwsh
         run: |
           @'
-          from PIL import Image, ImageDraw
-          img=Image.new('RGBA',(256,256),(255,255,255,255))
-          d=ImageDraw.Draw(img)
-          d.rounded_rectangle((12,12,244,244),radius=42,fill=(255,255,255,255),outline=(10,10,10,255),width=7)
-          d.text((50,82),'TOX',fill=(0,0,0,255))
-          img.save('appsrc/tox.ico',sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])
+          import re,base64,io
+          from PIL import Image
+          s=open('appsrc/tox_client/static/logo.svg',encoding='utf-8').read()
+          m=re.search(r'base64,([^\"]+)',s)
+          if not m: raise SystemExit('Embedded official logo PNG not found')
+          img=Image.open(io.BytesIO(base64.b64decode(m.group(1)))).convert('RGBA')
+          canvas=Image.new('RGBA',(256,256),(255,255,255,255))
+          img.thumbnail((232,232))
+          canvas.alpha_composite(img,((256-img.width)//2,(256-img.height)//2))
+          canvas.save('appsrc/tox.ico',sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])
           '@ | Set-Content -Encoding UTF8 appsrc/make_icon.py
           python appsrc/make_icon.py
 
-      - name: Build native app V2
+      - name: Build native app V006
         shell: pwsh
         working-directory: appsrc
         run: |
-          pyinstaller --noconfirm --clean --onedir --windowed --name TOX_SYSTEM_V2 --icon tox.ico --add-data 'tox_client/static;tox_client/static' --collect-all keyring --collect-all cryptography --hidden-import uvicorn.logging run.py
+          pyinstaller --noconfirm --clean --onedir --windowed --name TOX_SYSTEM_V006 --icon tox.ico --add-data 'tox_client/static;tox_client/static' --collect-all keyring --collect-all cryptography --hidden-import uvicorn.logging run.py
 
-      - name: Build installer V005
+      - name: Build installer V006
         shell: pwsh
         run: |
           @'
           Unicode true
           !include "MUI2.nsh"
           Name "TOX SYSTEM Demo"
-          OutFile "TOX_SETUP_V005.exe"
-          InstallDir "$LOCALAPPDATA\Programs\TOX SYSTEM V2"
+          OutFile "TOX_SETUP_V006.exe"
+          InstallDir "$LOCALAPPDATA\Programs\TOX SYSTEM V006"
           RequestExecutionLevel user
           BrandingText "TOX SYSTEM"
           !define MUI_ABORTWARNING
           !define MUI_ICON "appsrc\tox.ico"
           !define MUI_UNICON "appsrc\tox.ico"
-          !define MUI_FINISHPAGE_RUN "$INSTDIR\TOX_SYSTEM_V2.exe"
+          !define MUI_FINISHPAGE_RUN "$INSTDIR\TOX_SYSTEM_V006.exe"
           !define MUI_FINISHPAGE_RUN_TEXT "Avvia TOX SYSTEM"
           !define MUI_FINISHPAGE_NOREBOOTSUPPORT
           !insertmacro MUI_PAGE_WELCOME
@@ -106,41 +112,41 @@ jobs:
           !insertmacro MUI_LANGUAGE "Italian"
           Section "Installa TOX SYSTEM" SecMain
             SetOutPath "$INSTDIR"
-            File /r "appsrc\dist\TOX_SYSTEM_V2\*"
+            File /r "appsrc\dist\TOX_SYSTEM_V006\*"
             WriteUninstaller "$INSTDIR\Disinstalla TOX SYSTEM.exe"
             CreateDirectory "$SMPROGRAMS\TOX SYSTEM"
-            CreateShortcut "$SMPROGRAMS\TOX SYSTEM\TOX SYSTEM V2.lnk" "$INSTDIR\TOX_SYSTEM_V2.exe" "" "$INSTDIR\TOX_SYSTEM_V2.exe" 0
-            CreateShortcut "$DESKTOP\TOX SYSTEM V2.lnk" "$INSTDIR\TOX_SYSTEM_V2.exe" "" "$INSTDIR\TOX_SYSTEM_V2.exe" 0
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V2" "DisplayName" "TOX SYSTEM Demo V2"
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V2" "UninstallString" '$INSTDIR\Disinstalla TOX SYSTEM.exe'
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V2" "DisplayVersion" "0.0.5"
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V2" "Publisher" "TOX SYSTEM"
+            CreateShortcut "$SMPROGRAMS\TOX SYSTEM\TOX SYSTEM.lnk" "$INSTDIR\TOX_SYSTEM_V006.exe" "" "$INSTDIR\TOX_SYSTEM_V006.exe" 0
+            CreateShortcut "$DESKTOP\TOX SYSTEM.lnk" "$INSTDIR\TOX_SYSTEM_V006.exe" "" "$INSTDIR\TOX_SYSTEM_V006.exe" 0
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V006" "DisplayName" "TOX SYSTEM Demo"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V006" "UninstallString" '$INSTDIR\Disinstalla TOX SYSTEM.exe'
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V006" "DisplayVersion" "0.0.6"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V006" "Publisher" "TOX SYSTEM"
           SectionEnd
           Section "Uninstall"
-            Delete "$DESKTOP\TOX SYSTEM V2.lnk"
-            Delete "$SMPROGRAMS\TOX SYSTEM\TOX SYSTEM V2.lnk"
+            Delete "$DESKTOP\TOX SYSTEM.lnk"
+            Delete "$SMPROGRAMS\TOX SYSTEM\TOX SYSTEM.lnk"
             RMDir "$SMPROGRAMS\TOX SYSTEM"
             RMDir /r "$INSTDIR"
-            DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V2"
+            DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\TOX SYSTEM V006"
           SectionEnd
           '@ | Set-Content -Encoding UTF8 installer.nsi
           & 'C:\Program Files (x86)\NSIS\makensis.exe' installer.nsi
 
-      - name: Publish installer V005 to repository
+      - name: Publish installer V006
         shell: pwsh
         run: |
-          $bytes=[IO.File]::ReadAllBytes('TOX_SETUP_V005.exe')
-          [IO.File]::WriteAllText('downloads/TOX_SETUP_V005.exe.b64',[Convert]::ToBase64String($bytes))
-          $hash=(Get-FileHash 'TOX_SETUP_V005.exe' -Algorithm SHA256).Hash.ToLower()
-          [IO.File]::WriteAllText('downloads/TOX_SETUP_V005.sha256.txt',$hash)
+          $bytes=[IO.File]::ReadAllBytes('TOX_SETUP_V006.exe')
+          [IO.File]::WriteAllText('downloads/TOX_SETUP_V006.exe.b64',[Convert]::ToBase64String($bytes))
+          $hash=(Get-FileHash 'TOX_SETUP_V006.exe' -Algorithm SHA256).Hash.ToLower()
+          [IO.File]::WriteAllText('downloads/TOX_SETUP_V006.sha256.txt',$hash)
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add downloads/TOX_SETUP_V005.exe.b64 downloads/TOX_SETUP_V005.sha256.txt
-          git commit -m 'Publish TOX Windows installer V005' || echo 'No changes'
+          git add downloads/TOX_SETUP_V006.exe.b64 downloads/TOX_SETUP_V006.sha256.txt
+          git commit -m 'Publish TOX Windows installer V006' || echo 'No changes'
           git push
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TOX_SETUP_V005
-          path: TOX_SETUP_V005.exe
+          name: TOX_SETUP_V006
+          path: TOX_SETUP_V006.exe
