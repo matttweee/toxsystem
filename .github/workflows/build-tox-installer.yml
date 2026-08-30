@@ -53,7 +53,6 @@ jobs:
           @'
           Unicode true
           !include "MUI2.nsh"
-          !include "nsExec.nsh"
           Name "TOX SYSTEM Demo"
           OutFile "TOX_SETUP_V006.exe"
           InstallDir "$LOCALAPPDATA\Programs\TOX SYSTEM V006"
@@ -66,10 +65,10 @@ jobs:
           !insertmacro MUI_PAGE_FINISH
           !insertmacro MUI_LANGUAGE "Italian"
           Section
-            nsExec::ExecToLog 'taskkill /F /IM TOX_SYSTEM.exe'
-            nsExec::ExecToLog 'taskkill /F /IM TOX_SYSTEM_V2.exe'
-            nsExec::ExecToLog 'taskkill /F /IM TOX_SYSTEM_V006.exe'
-            Sleep 800
+            ExecWait 'cmd.exe /C taskkill /F /IM TOX_SYSTEM.exe >NUL 2>&1'
+            ExecWait 'cmd.exe /C taskkill /F /IM TOX_SYSTEM_V2.exe >NUL 2>&1'
+            ExecWait 'cmd.exe /C taskkill /F /IM TOX_SYSTEM_V006.exe >NUL 2>&1'
+            Sleep 1000
             SetOutPath "$INSTDIR"
             File /r "appsrc\dist\TOX_SYSTEM_V006\*"
             CreateShortcut "$DESKTOP\TOX SYSTEM.lnk" "$INSTDIR\TOX_SYSTEM_V006.exe"
