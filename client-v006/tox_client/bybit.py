@@ -1,5 +1,6 @@
 from __future__ import annotations
 import time,hmac,hashlib,json,requests
+from decimal import Decimal, ROUND_DOWN
 from urllib.parse import urlencode
 BASE='https://api-demo.bybit.com'
 class BybitDemo:
@@ -47,6 +48,14 @@ class BybitDemo:
         if q<minq: q=minq
         dec=max(0,len(str(step).split('.')[-1].rstrip('0'))) if '.' in str(step) else 0
         return round(q,dec)
+    def reduce_half_qty(self,symbol,size):
+        info=self.instrument(symbol); lf=info.get('lotSizeFilter',{})
+        step=Decimal(str(lf.get('qtyStep') or '0.001')); minq=Decimal(str(lf.get('minOrderQty') or step))
+        cur=Decimal(str(size)); half=(cur/Decimal('2'))
+        qty=(half/step).to_integral_value(rounding=ROUND_DOWN)*step
+        if qty<=0 or qty<minq or qty>=cur: return '0'
+        s=format(qty,'f').rstrip('0').rstrip('.') if '.' in format(qty,'f') else format(qty,'f')
+        return s or '0'
     def market_entry(self,symbol,direction,qty):
         side='Buy' if str(direction).upper() in ('CALL','BUY') else 'Sell'
         return self.post('/v5/order/create',{'category':'linear','symbol':symbol,'side':side,'orderType':'Market','qty':str(qty),'positionIdx':0})
