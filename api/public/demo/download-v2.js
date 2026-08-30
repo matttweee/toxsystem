@@ -9,9 +9,9 @@ export default async function handler(req,res){
   const client_id=String(req.query?.client_id||'').trim();const activation_code=String(req.query?.activation_code||'').trim();
   if(!client_id||!activation_code){res.status(400).json({error:'CLIENT_ID_AND_ACTIVATION_REQUIRED'});return}
   await rpc({p_client_id:client_id,p_activation_token:activation_code});
-  const b64=fs.readFileSync(path.join(process.cwd(),'downloads','TOX_SETUP_V004.exe.b64'),'utf8').trim();const buf=Buffer.from(b64,'base64');
+  const b64=fs.readFileSync(path.join(process.cwd(),'downloads','TOX_SETUP_V005.exe.b64'),'utf8').trim();const buf=Buffer.from(b64,'base64');
   res.setHeader('Content-Type','application/vnd.microsoft.portable-executable');
-  res.setHeader('Content-Disposition','attachment; filename="TOX_SETUP.exe"');
+  res.setHeader('Content-Disposition','attachment; filename="TOX_SETUP_V005.exe"');
   res.setHeader('Content-Length',String(buf.length));
   res.setHeader('Cache-Control','private, no-store');
   res.status(200).end(buf);
