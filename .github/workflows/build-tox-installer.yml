@@ -29,10 +29,35 @@ jobs:
           Expand-Archive -Path 'TOX_CLIENT_DEMO_V003.zip' -DestinationPath 'buildsrc' -Force
           Copy-Item 'buildsrc/TOX_CLIENT_DEMO_V003' 'appsrc' -Recurse -Force
           if (-not (Test-Path 'appsrc/tox_client/static/index.html')) { throw 'Client static files missing after extraction' }
+
           $app = Get-Content 'appsrc/tox_client/app.py' -Raw
           $app = $app.Replace("uvicorn.run(app,host='127.0.0.1',port=8791,log_level='warning')", "uvicorn.run(app,host='127.0.0.1',port=8791,log_level='warning',log_config=None,access_log=False)")
+
+          $waitPatch = @'
+          _tox_original_browser_open = webbrowser.open
+          def _tox_browser_open_when_ready(url, *args, **kwargs):
+              if isinstance(url, str) and url.startswith('http://127.0.0.1:8791'):
+                  import time
+                  import urllib.request
+                  for _ in range(120):
+                      try:
+                          with urllib.request.urlopen(url, timeout=0.35) as r:
+                              if r.status < 500:
+                                  return _tox_original_browser_open(url, *args, **kwargs)
+                      except Exception:
+                          time.sleep(0.25)
+                  return False
+              return _tox_original_browser_open(url, *args, **kwargs)
+          webbrowser.open = _tox_browser_open_when_ready
+
+          def run():
+          '@
+          $app = $app.Replace('def run():', $waitPatch)
+
           Set-Content -Path 'appsrc/tox_client/app.py' -Value $app -Encoding UTF8
-          if ((Get-Content 'appsrc/tox_client/app.py' -Raw) -notmatch 'log_config=None') { throw 'Uvicorn packaged logging patch not applied' }
+          $patched = Get-Content 'appsrc/tox_client/app.py' -Raw
+          if ($patched -notmatch 'log_config=None') { throw 'Uvicorn packaged logging patch not applied' }
+          if ($patched -notmatch '_tox_browser_open_when_ready') { throw 'Dashboard readiness patch not applied' }
 
       - name: Install build dependencies
         shell: pwsh
