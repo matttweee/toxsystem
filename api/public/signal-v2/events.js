@@ -1,7 +1,7 @@
-const SUPABASE_URL='https://yfshvjxucvmyvahcwczx.supabase.co';
-const SUPABASE_KEY='sb_publishable_5cfq5V51rRtbd031ELhFzw_9T2pAK1y';
+const SUPABASE_URL='https://mohncnsplqtarmobmcie.supabase.co';
+const SUPABASE_KEY='sb_publishable_1ZbPyCuvEXUNkic1Z7nnpw_ztPMyj1J';
 function json(res,status,data){res.status(status).setHeader('Content-Type','application/json');res.setHeader('Cache-Control','private, no-store');res.end(JSON.stringify(data))}
-async function rpc(body){const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/tox_signal_fetch`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await r.text();if(!r.ok)throw new Error(`${r.status}:${text}`);return text?JSON.parse(text):null}
+async function rpc(body){const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/tox_signal_fetch`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await r.text();if(!r.ok)throw new Error(`${r.status}:${text}`);return text?JSON.parse(text):null}
 export default async function handler(req,res){
  if(req.method!=='GET')return json(res,405,{error:'METHOD_NOT_ALLOWED'});
  try{
