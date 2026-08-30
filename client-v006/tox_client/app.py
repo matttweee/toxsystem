@@ -67,30 +67,54 @@ def test_bybit():
 def trading(mode:str):
     if not settings.get('bound'): raise HTTPException(status_code=403,detail='BYBIT_BIND_REQUIRED')
     settings['trading']=mode.lower()=='on';save_settings(settings);return {'ok':True,'trading':settings['trading']}
+def _consume(eid,seq):
+    state['processed']=(state['processed']+[eid])[-5000:]
+    state['last_sequence']=max(state['last_sequence'],seq)
+    save_state(state)
 def handle_event(ev):
     global last_error
     eid=str(ev.get('event_id') or ''); seq=int(ev.get('server_sequence') or 0)
     if not eid or eid in state['processed'] or seq<=state['last_sequence']: return
-    typ=ev.get('event_type'); symbol=str(ev.get('symbol') or '').upper(); ref=ev.get('position_reference')
+    typ=str(ev.get('event_type') or ''); symbol=str(ev.get('symbol') or '').upper()
     try:
-        if typ=='SYSTEM_STATUS':
-            state['processed']=(state['processed']+[eid])[-5000:]; state['last_sequence']=max(state['last_sequence'],seq);save_state(state); return
-        b=client()
         if typ=='ENTRY':
-            if not settings.get('trading'): return
-            pos=b.positions()
+            if not settings.get('trading'):
+                state['history'].append({'time':time.time(),'type':'ENTRY_SKIPPED_TRADING_OFF','symbol':symbol,'event_id':eid}); _consume(eid,seq); return
+            b=client(); pos=b.positions()
             if len(pos)>=settings['max_positions']: raise RuntimeError('MAX_POSITIONS_REACHED')
             if any(p.get('symbol')==symbol and float(p.get('size') or 0)>0 for p in pos): raise RuntimeError('SYMBOL_ALREADY_OPEN')
             lev=settings['leverage']; b.set_leverage(symbol,lev); qty=b.qty_for(symbol,settings['capital_pct'],lev); r=b.market_entry(symbol,ev.get('side'),qty)
             state['history'].append({'time':time.time(),'type':'ENTRY','symbol':symbol,'side':ev.get('side'),'qty':qty,'leverage':lev,'order':r.get('result',{}).get('orderId'),'event_id':eid})
-        elif typ in ('FROZEN_EXIT','C_EXIT_SUGGESTED'):
-            if typ=='C_EXIT_SUGGESTED' and not settings.get('c_auto_exit'):
-                state['history'].append({'time':time.time(),'type':'C_ADVISORY','symbol':symbol,'event_id':eid}); return
-            pos=b.positions(); target=next((p for p in pos if (symbol and p.get('symbol')==symbol) or (ref and p.get('symbol')==ref)),None)
+        elif typ=='FROZEN_REDUCE50':
+            b=client(); pos=b.positions(); target=next((p for p in pos if p.get('symbol')==symbol and float(p.get('size') or 0)>0),None)
             if target:
-                r=b.close_position(target['symbol'],target['side'],target['size'])
-                state['history'].append({'time':time.time(),'type':typ,'symbol':target['symbol'],'qty':target['size'],'order':r.get('result',{}).get('orderId'),'event_id':eid})
-        state['processed']=(state['processed']+[eid])[-5000:]; state['last_sequence']=max(state['last_sequence'],seq);save_state(state)
+                qty=b.reduce_half_qty(symbol,target['size'])
+                if qty=='0':
+                    state['history'].append({'time':time.time(),'type':'FROZEN_REDUCE50_SKIPPED_MIN_QTY','symbol':symbol,'event_id':eid})
+                else:
+                    r=b.close_position(symbol,target['side'],qty)
+                    state['history'].append({'time':time.time(),'type':'FROZEN_REDUCE50','symbol':symbol,'qty':qty,'order':r.get('result',{}).get('orderId'),'event_id':eid})
+            else:
+                state['history'].append({'time':time.time(),'type':'FROZEN_REDUCE50_NO_POSITION','symbol':symbol,'event_id':eid})
+        elif typ=='FROZEN_EXIT':
+            b=client(); pos=b.positions(); target=next((p for p in pos if p.get('symbol')==symbol and float(p.get('size') or 0)>0),None)
+            if target:
+                r=b.close_position(symbol,target['side'],target['size'])
+                state['history'].append({'time':time.time(),'type':'FROZEN_EXIT','symbol':symbol,'qty':target['size'],'order':r.get('result',{}).get('orderId'),'event_id':eid})
+            else:
+                state['history'].append({'time':time.time(),'type':'FROZEN_EXIT_NO_POSITION','symbol':symbol,'event_id':eid})
+        elif typ=='C_EXIT_SUGGESTED':
+            if not settings.get('c_auto_exit'):
+                state['history'].append({'time':time.time(),'type':'C_ADVISORY','symbol':symbol,'event_id':eid}); _consume(eid,seq); return
+            b=client(); pos=b.positions(); target=next((p for p in pos if p.get('symbol')==symbol and float(p.get('size') or 0)>0),None)
+            if target:
+                r=b.close_position(symbol,target['side'],target['size'])
+                state['history'].append({'time':time.time(),'type':'C_EXIT_SUGGESTED','symbol':symbol,'qty':target['size'],'order':r.get('result',{}).get('orderId'),'event_id':eid})
+            else:
+                state['history'].append({'time':time.time(),'type':'C_EXIT_NO_POSITION','symbol':symbol,'event_id':eid})
+        else:
+            state['history'].append({'time':time.time(),'type':'UNKNOWN_EVENT_SKIPPED','event_id':eid}); _consume(eid,seq); return
+        _consume(eid,seq)
     except Exception as e:
         last_error=str(e); state['history'].append({'time':time.time(),'type':'ERROR','event_id':eid,'error':last_error});save_state(state)
 def poll_loop():
