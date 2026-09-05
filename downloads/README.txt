@@ -1,1 +1,1 @@
-Client artifacts are served only via authenticated /api/public/demo/download-v2
+Production client: TOX_SYSTEM_V007.exe (authenticated via /api/public/demo/download-v2)

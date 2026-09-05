@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 
 const SUPABASE_URL = 'https://mohncnsplqtarmobmcie.supabase.co';
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     }
     await rpc({ p_client_id: client_id, p_activation_token: activation_code });
 
-    const artifactPath = path.join(process.cwd(), 'api', '_artifact', ARTIFACT_NAME);
+    const artifactPath = path.join(process.cwd(), 'downloads', ARTIFACT_NAME);
     if (!fs.existsSync(artifactPath)) {
       res.status(503).json({ error: 'ARTIFACT_MISSING', detail: ARTIFACT_NAME });
       return;
@@ -45,12 +45,8 @@ export default async function handler(req, res) {
     res.status(200).end(buf);
   } catch (e) {
     const d = String(e.message || e);
-    let s = 403,
-      err = 'DOWNLOAD_NOT_AUTHORIZED';
-    if (d.includes('CLIENT_NOT_FOUND')) {
-      s = 404;
-      err = 'CLIENT_NOT_FOUND';
-    }
+    let s = 403, err = 'DOWNLOAD_NOT_AUTHORIZED';
+    if (d.includes('CLIENT_NOT_FOUND')) { s = 404; err = 'CLIENT_NOT_FOUND'; }
     res.status(s).json({ error: err, detail: d.slice(0, 220) });
   }
 }
