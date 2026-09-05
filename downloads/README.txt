@@ -1,1 +1,1 @@
-TOX client downloads — current production artifact: TOX_SYSTEM_V007.exe
+Client artifacts are served only via authenticated /api/public/demo/download-v2

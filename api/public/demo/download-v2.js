@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     }
     await rpc({ p_client_id: client_id, p_activation_token: activation_code });
 
-    const artifactPath = path.join(process.cwd(), 'downloads', ARTIFACT_NAME);
+    const artifactPath = path.join(process.cwd(), 'api', '_artifact', ARTIFACT_NAME);
     if (!fs.existsSync(artifactPath)) {
       res.status(503).json({ error: 'ARTIFACT_MISSING', detail: ARTIFACT_NAME });
       return;
