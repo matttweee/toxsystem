@@ -5,16 +5,6 @@
     { "source": "/demo", "destination": "/demo-v2/index.html" },
     { "source": "/downloads/:path*", "destination": "/404" }
   ],
-  "functions": {
-    "api/public/demo/download-v2.js": {
-      "includeFiles": "downloads/**",
-      "memory": 1024,
-      "maxDuration": 60
-    },
-    "api/public/demo/download.js": {
-      "includeFiles": "downloads/**"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
