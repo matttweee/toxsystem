@@ -1,1 +1,256 @@
-<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TOX SYSTEM — Prova la Demo</title><meta name="description" content="Registrazione e download TOX SYSTEM Demo 42 giorni"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><style>:root{--g:#72c900;--bg:#0b0d0c;--line:#dfe4dc}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:#0b0d0c}.w{width:min(900px,calc(100% - 30px));margin:auto}.nav{padding:12px 0;border-bottom:1px solid #eee}.nav a{display:inline-flex;align-items:center;text-decoration:none}.nav img{display:block;width:128px;height:auto}.hero{background:var(--bg);color:white;padding:54px 0}.hero h1{font-size:clamp(40px,7vw,72px);line-height:.94;margin:8px 0}.hero span{color:var(--g)}.hero p{color:#bdc2bf;max-width:700px;line-height:1.5}.sec{padding:38px 0}.card{border:1px solid var(--line);border-radius:18px;padding:22px;margin:14px 0;background:#fff}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:12px;font-weight:900;margin-bottom:5px}.field input{width:100%;padding:13px;border:1px solid #d6dcd3;border-radius:10px;font:inherit}.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#111;border:0;border-radius:11px;padding:13px 17px;font-weight:950;cursor:pointer;background:linear-gradient(90deg,var(--g),#ffd633)}.btn.alt{background:#111;color:white}.btn:disabled{opacity:.4}.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.msg{margin-top:12px;padding:12px;border-radius:10px;background:#f4f6f2;font-size:14px}.ok{border-left:4px solid var(--g)}.bad{border-left:4px solid #d34}.step{font-size:12px;font-weight:950;color:#568f13}.verifyrow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.verifyrow small{display:block;color:#707772;margin-top:5px}.checks label{display:block;margin:11px 0}.hidden{display:none}.pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:950;background:#fff3cd;color:#765900}.pill.good{background:#eaf8df;color:#315f00}.activation{margin:15px 0;padding:16px;border-radius:12px;background:#f4f6f2}.activation b{display:block;margin-bottom:8px}.code{font-family:ui-monospace,monospace;word-break:break-all;font-size:13px}.tiny{font-size:12px;color:#707772;line-height:1.5}.installsteps{margin:14px 0;padding-left:22px;line-height:1.7}@media(max-width:650px){.grid,.verifyrow{grid-template-columns:1fr}.btn{width:100%}}</style></head><body><div class="nav"><div class="w"><a href="/"><img src="/logo-tox.svg" alt="TOX SYSTEM"></a></div></div><section class="hero"><div class="w"><div class="step">DEMO · 42 GIORNI</div><h1>REGISTRATI.<br><span>SCARICA. PROVALO.</span></h1><p>Verifica la tua email, accetta i documenti e installa TOX come un normale programma Windows. La Demo inizia solo quando colleghi il tuo account Bybit DEMO.</p></div></section><section class="sec"><div class="w"><div class="card"><div class="step">1 · REGISTRAZIONE</div><h2>I tuoi dati</h2><div class="grid"><div class="field"><label>NOME *</label><input id="first" autocomplete="given-name"></div><div class="field"><label>COGNOME *</label><input id="last" autocomplete="family-name"></div><div class="field"><label>EMAIL *</label><input id="email" type="email" autocomplete="email"></div><div class="field"><label>CELLULARE *</label><input id="phone" autocomplete="tel" placeholder="+393331234567"></div><div class="field"><label>BYBIT UID *</label><input id="uid" inputmode="numeric" placeholder="es. 12345678"></div><div class="field"><label>REFERRAL</label><input id="ref"></div></div><div class="row"><button class="btn" onclick="register()">REGISTRATI</button></div><div id="regmsg" class="msg hidden"></div></div><div id="verifyCard" class="card hidden"><div class="step">2 · EMAIL</div><h2>Verifica la tua email</h2><div class="verifyrow"><div><b>Email <span id="emailPill" class="pill">DA VERIFICARE</span></b><small>Ti inviamo un link. Cliccalo e tornerai automaticamente qui.</small></div><button id="emailSendBtn" class="btn alt" onclick="sendEmail()">INVIA EMAIL</button></div><div id="vermsg" class="msg">Email non verificata</div></div><div id="docsCard" class="card hidden"><div class="step">3 · ACCETTA E CONTINUA</div><h2>Documenti</h2><div class="checks"><label><input type="checkbox" id="c1"> Ho letto e accetto il <a href="/legal/contratto-tox-demo.html" target="_blank">Contratto TOX DEMO</a></label><label><input type="checkbox" id="c2"> Ho letto e accetto il <a href="/legal/regolamento-demo.html" target="_blank">Regolamento DEMO</a></label><label><input type="checkbox" id="c3"> Ho letto la <a href="/legal/privacy.html" target="_blank">Privacy</a></label><label><input type="checkbox" id="c4"> Ho capito che la Demo opera esclusivamente su Bybit DEMO.</label></div><button class="btn" onclick="acceptDocs()">CONTINUA AL DOWNLOAD</button><div id="docsmsg" class="msg hidden"></div></div><div id="downloadCard" class="card hidden"><div class="step">4 · INSTALLA</div><h2>TOX Demo è pronto</h2><p>Scarica l'installer e aprilo. Non serve installare Python o altri pacchetti.</p><ol class="installsteps"><li>Scarica <b>TOX_SETUP.exe</b></li><li>Aprilo e completa l'installazione</li><li>Al termine si apre TOX SYSTEM</li><li>Troverai anche l'icona TOX SYSTEM sul Desktop e nel menu Start</li></ol><div class="activation"><b>Codice di attivazione</b><div class="code" id="activationCode"></div><div class="row"><button class="btn alt" onclick="copyCode()" id="copyBtn">COPIA CODICE</button></div></div><div class="row"><a class="btn" id="downloadLink" download>SCARICA TOX_SETUP.EXE</a></div><p class="tiny">Conserva il codice: ti verrà richiesto al primo accesso. I 42 giorni iniziano quando il tuo account Bybit DEMO viene collegato correttamente.</p></div></div></section><script>const G='https://mohncnsplqtarmobmcie.supabase.co/functions/v1/tox-demo-gate',E='https://mohncnsplqtarmobmcie.supabase.co/functions/v1/tox-demo-email';const emailReturn=location.hash.includes('access_token=');if(!emailReturn&&!sessionStorage.getItem('tox_flow_active')){localStorage.removeItem('tox_v2_cid');localStorage.removeItem('tox_v2_reg')}let cid=localStorage.getItem('tox_v2_cid')||'',reg=localStorage.getItem('tox_v2_reg')||'',ev=false,emailCooldown=0;function msg(id,t,ok=true){const e=document.getElementById(id);e.textContent=t;e.className='msg '+(ok?'ok':'bad')}async function post(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw Error(j.detail||j.error||'ERRORE');return j}async function call(action,data={}){return post(G,{action,...data})}async function emailCall(action,data={}){return post(E,{action,client_id:cid,registration_token:reg,...data})}async function register(){try{const d=await call('register',{email:email.value,first_name:first.value,last_name:last.value,phone_e164:phone.value,bybit_uid:uid.value,referral_code:ref.value});cid=d.client_id;reg=d.registration_token;ev=!!d.email_verified;localStorage.setItem('tox_v2_cid',cid);localStorage.setItem('tox_v2_reg',reg);sessionStorage.setItem('tox_flow_active','1');msg('regmsg','Registrazione completata. Ora verifica la tua email.');verifyCard.classList.remove('hidden');renderVerify();unlockDocs()}catch(e){msg('regmsg',e.message,false)}}function startEmailCooldown(sec=60){emailCooldown=Date.now()+sec*1000;const b=emailSendBtn;const tick=()=>{const left=Math.ceil((emailCooldown-Date.now())/1000);if(left>0){b.disabled=true;b.textContent='RINVIA TRA '+left+'s';setTimeout(tick,1000)}else{b.disabled=false;b.textContent='INVIA EMAIL'}};tick()}async function sendEmail(){try{const d=await emailCall('send_magic_link');if(d.already_verified){ev=true;renderVerify();unlockDocs();return}msg('vermsg','Email inviata. Apri il link che hai ricevuto.');startEmailCooldown()}catch(e){msg('vermsg',e.message,false)}}function renderVerify(){emailPill.textContent=ev?'VERIFICATA':'DA VERIFICARE';emailPill.className='pill'+(ev?' good':'');msg('vermsg',ev?'Email verificata. Puoi continuare.':'Email non verificata',ev)}function unlockDocs(){docsCard.classList.toggle('hidden',!ev)}async function verifyEmailReturn(){if(!emailReturn||!cid||!reg)return;try{const h=new URLSearchParams(location.hash.replace(/^#/,'')),access=h.get('access_token');const d=await emailCall('verify_access_token',{access_token:access});ev=!!d.email_verified;sessionStorage.setItem('tox_flow_active','1');history.replaceState(null,'',location.pathname+location.search);verifyCard.classList.remove('hidden');renderVerify();unlockDocs()}catch(e){msg('vermsg','Verifica email non riuscita: '+e.message,false)}}async function acceptDocs(){if(![c1,c2,c3,c4].every(x=>x.checked)){msg('docsmsg','Accetta tutti i punti per continuare.',false);return}try{const d=await call('accept_documents',{client_id:cid,registration_token:reg});activationCode.textContent=d.activation_code;downloadLink.href=d.download_url;downloadCard.classList.remove('hidden');msg('docsmsg','Perfetto. Il download è pronto.');downloadCard.scrollIntoView({behavior:'smooth'})}catch(e){msg('docsmsg',e.message,false)}}async function copyCode(){const t=activationCode.textContent.trim();if(!t)return;try{await navigator.clipboard.writeText(t);copyBtn.textContent='COPIATO ✓';setTimeout(()=>copyBtn.textContent='COPIA CODICE',1800)}catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();copyBtn.textContent='COPIATO ✓'}}async function resumeCurrentFlow(){if(!sessionStorage.getItem('tox_flow_active')||!cid||!reg)return;try{const d=await call('status',{client_id:cid,registration_token:reg});ev=d.email_verified;verifyCard.classList.remove('hidden');renderVerify();unlockDocs()}catch(e){}}(async()=>{if(emailReturn)await verifyEmailReturn();else await resumeCurrentFlow()})();</script></body></html>
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TOX SYSTEM — Prova la Demo</title>
+<meta name="description" content="Registrazione e download TOX SYSTEM Demo 42 giorni">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+:root{--g:#72c900;--bg:#0b0d0c;--line:#dfe4dc}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#0b0d0c}
+.w{width:min(900px,calc(100% - 30px));margin:auto}
+.nav{padding:12px 0;border-bottom:1px solid #eee}
+.nav a{display:inline-flex;align-items:center;text-decoration:none}
+.nav img{display:block;width:128px;height:auto}
+.hero{background:var(--bg);color:white;padding:54px 0}
+.hero h1{font-size:clamp(40px,7vw,72px);line-height:.94;margin:8px 0}
+.hero span{color:var(--g)}
+.hero p{color:#bdc2bf;max-width:700px;line-height:1.5}
+.sec{padding:38px 0}
+.card{border:1px solid var(--line);border-radius:18px;padding:22px;margin:14px 0;background:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field label{display:block;font-size:12px;font-weight:900;margin-bottom:5px}
+.field input{width:100%;padding:13px;border:1px solid #d6dcd3;border-radius:10px;font:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#111;border:0;border-radius:11px;padding:13px 17px;font-weight:950;cursor:pointer;background:linear-gradient(90deg,var(--g),#ffd633)}
+.btn.alt{background:#111;color:white}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.msg{margin-top:12px;padding:12px;border-radius:10px;background:#f4f6f2;font-size:14px}
+.ok{border-left:4px solid var(--g)}
+.bad{border-left:4px solid #d34}
+.step{font-size:12px;font-weight:950;color:#568f13}
+.verifyrow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.verifyrow small{display:block;color:#707772;margin-top:5px}
+.checks label{display:block;margin:11px 0}
+.hidden{display:none}
+.pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:950;background:#fff3cd;color:#765900}
+.pill.good{background:#eaf8df;color:#315f00}
+.activation{margin:15px 0;padding:16px;border-radius:12px;background:#f4f6f2}
+.activation b{display:block;margin-bottom:8px}
+.code{font-family:ui-monospace,monospace;word-break:break-all;font-size:13px}
+.tiny{font-size:12px;color:#707772;line-height:1.5}
+.installsteps{margin:14px 0;padding-left:22px;line-height:1.7}
+.linkish{background:none;border:0;color:#315f00;font-weight:900;cursor:pointer;padding:0;text-decoration:underline}
+@media(max-width:650px){.grid,.verifyrow{grid-template-columns:1fr}.btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="nav"><div class="w"><a href="/"><img src="/logo-tox.svg" alt="TOX SYSTEM"></a></div></div>
+<section class="hero"><div class="w">
+  <div class="step">DEMO · 42 GIORNI</div>
+  <h1>REGISTRATI.<br><span>SCARICA. PROVALO.</span></h1>
+  <p>Verifica la tua email, accetta i documenti e installa TOX. La Demo inizia solo quando colleghi il tuo account Bybit DEMO. Se sei già registrato puoi sempre riscaricare l'ultima build senza resettare i 42 giorni.</p>
+</div></section>
+<section class="sec"><div class="w">
+
+<div class="card" id="regCard">
+  <div class="step">1 · REGISTRAZIONE</div>
+  <h2>I tuoi dati</h2>
+  <div class="grid">
+    <div class="field"><label>NOME *</label><input id="first" autocomplete="given-name"></div>
+    <div class="field"><label>COGNOME *</label><input id="last" autocomplete="family-name"></div>
+    <div class="field"><label>EMAIL *</label><input id="email" type="email" autocomplete="email"></div>
+    <div class="field"><label>CELLULARE *</label><input id="phone" autocomplete="tel" placeholder="+393331234567"></div>
+    <div class="field"><label>BYBIT UID *</label><input id="uid" inputmode="numeric" placeholder="es. 12345678"></div>
+    <div class="field"><label>REFERRAL</label><input id="ref"></div>
+  </div>
+  <div class="row"><button class="btn" onclick="register()">REGISTRATI</button></div>
+  <p class="tiny" style="margin-top:14px">Già registrato? <button class="linkish" type="button" onclick="showRedownload()">Riscarica l'ultima build</button></p>
+  <div id="regmsg" class="msg hidden"></div>
+</div>
+
+<div id="reCard" class="card hidden">
+  <div class="step">RISCARICA · UTENTI GIÀ REGISTRATI</div>
+  <h2>Scarica di nuovo il client</h2>
+  <p class="tiny">Inserisci l'email usata in registrazione. Ti inviamo un codice OTP. I 42 giorni della DEMO non vengono resettati.</p>
+  <div class="grid">
+    <div class="field"><label>EMAIL *</label><input id="reEmail" type="email" autocomplete="email"></div>
+    <div class="field"><label>CODICE OTP</label><input id="reOtp" inputmode="numeric" placeholder="dopo aver ricevuto l'email"></div>
+  </div>
+  <div class="row">
+    <button class="btn alt" id="reSendBtn" onclick="redownloadRequest()">INVIA CODICE</button>
+    <button class="btn" onclick="redownloadConfirm()">CONFERMA E SCARICA</button>
+    <button class="btn alt" type="button" onclick="hideRedownload()">TORNA ALLA REGISTRAZIONE</button>
+  </div>
+  <div id="remsg" class="msg hidden"></div>
+</div>
+
+<div id="verifyCard" class="card hidden">
+  <div class="step">2 · EMAIL</div>
+  <h2>Verifica la tua email</h2>
+  <div class="verifyrow">
+    <div><b>Email <span id="emailPill" class="pill">DA VERIFICARE</span></b><small>Ti inviamo un link. Cliccalo e tornerai automaticamente qui.</small></div>
+    <button id="emailSendBtn" class="btn alt" onclick="sendEmail()">INVIA EMAIL</button>
+  </div>
+  <div id="vermsg" class="msg">Email non verificata</div>
+</div>
+
+<div id="docsCard" class="card hidden">
+  <div class="step">3 · ACCETTA E CONTINUA</div>
+  <h2>Documenti</h2>
+  <div class="checks">
+    <label><input type="checkbox" id="c1"> Ho letto e accetto il <a href="/legal/contratto-tox-demo.html" target="_blank">Contratto TOX DEMO</a></label>
+    <label><input type="checkbox" id="c2"> Ho letto e accetto il <a href="/legal/regolamento-demo.html" target="_blank">Regolamento DEMO</a></label>
+    <label><input type="checkbox" id="c3"> Ho letto la <a href="/legal/privacy.html" target="_blank">Privacy</a></label>
+    <label><input type="checkbox" id="c4"> Ho capito che la Demo opera esclusivamente su Bybit DEMO.</label>
+  </div>
+  <button class="btn" onclick="acceptDocs()">CONTINUA AL DOWNLOAD</button>
+  <div id="docsmsg" class="msg hidden"></div>
+</div>
+
+<div id="downloadCard" class="card hidden">
+  <div class="step">4 · INSTALLA</div>
+  <h2>TOX Demo è pronto</h2>
+  <p>Scarica l'ultima build <b>TOX SYSTEM V007</b> e aprila. Non serve installare Python.</p>
+  <ol class="installsteps">
+    <li>Scarica <b>TOX_SYSTEM_V007.exe</b></li>
+    <li>Aprilo (Windows SmartScreen: Altre informazioni → Esegui comunque)</li>
+    <li>Al termine si apre TOX SYSTEM</li>
+  </ol>
+  <div class="activation">
+    <b>Codice di attivazione</b>
+    <div class="code" id="activationCode"></div>
+    <div class="row"><button class="btn alt" onclick="copyCode()" id="copyBtn">COPIA CODICE</button></div>
+  </div>
+  <div class="row"><a class="btn" id="downloadLink" download>SCARICA TOX_SYSTEM_V007.EXE</a></div>
+  <p class="tiny">Conserva il codice: ti verrà richiesto al primo accesso. I 42 giorni iniziano solo al collegamento Bybit DEMO e non vengono resettati se riscarichi il client.</p>
+</div>
+
+</div></section>
+<script>
+const G='https://mohncnsplqtarmobmcie.supabase.co/functions/v1/tox-demo-gate';
+const E='https://mohncnsplqtarmobmcie.supabase.co/functions/v1/tox-demo-email';
+const emailReturn=location.hash.includes('access_token=');
+if(!emailReturn&&!sessionStorage.getItem('tox_flow_active')){
+  localStorage.removeItem('tox_v2_cid');
+  localStorage.removeItem('tox_v2_reg');
+}
+let cid=localStorage.getItem('tox_v2_cid')||'',reg=localStorage.getItem('tox_v2_reg')||'',ev=false,emailCooldown=0,reCooldown=0;
+
+function msg(id,t,ok=true){const e=document.getElementById(id);e.textContent=t;e.className='msg '+(ok?'ok':'bad');e.classList.remove('hidden')}
+async function post(url,body){
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!r.ok){const err=Error(j.error||j.detail||'ERRORE');err.code=j.error;err.detail=j.detail;throw err}
+  return j;
+}
+async function call(action,data={}){return post(G,{action,...data})}
+async function emailCall(action,data={}){return post(E,{action,client_id:cid,registration_token:reg,...data})}
+
+function showRedownload(){
+  reCard.classList.remove('hidden');
+  if(email.value) reEmail.value=email.value;
+  reCard.scrollIntoView({behavior:'smooth'});
+}
+function hideRedownload(){reCard.classList.add('hidden')}
+
+function showDownload(d){
+  activationCode.textContent=d.activation_code;
+  downloadLink.href=d.download_url;
+  downloadCard.classList.remove('hidden');
+  downloadCard.scrollIntoView({behavior:'smooth'});
+}
+
+async function register(){
+  try{
+    const d=await call('register',{email:email.value,first_name:first.value,last_name:last.value,phone_e164:phone.value,bybit_uid:uid.value,referral_code:ref.value});
+    cid=d.client_id;reg=d.registration_token;ev=!!d.email_verified;
+    localStorage.setItem('tox_v2_cid',cid);localStorage.setItem('tox_v2_reg',reg);sessionStorage.setItem('tox_flow_active','1');
+    msg('regmsg','Registrazione completata. Ora verifica la tua email.');
+    verifyCard.classList.remove('hidden');renderVerify();unlockDocs();
+  }catch(e){
+    if((e.code||e.message||'').includes('DEMO_ALREADY_USED')){
+      msg('regmsg','Questa email ha già una DEMO attiva. Usa il riscaricamento qui sotto: i 42 giorni non vengono resettati.',false);
+      showRedownload();
+      return;
+    }
+    msg('regmsg',e.message,false);
+  }
+}
+
+function startCooldown(btn,untilKey,label,sec=60){
+  window[untilKey]=Date.now()+sec*1000;
+  const tick=()=>{
+    const left=Math.ceil((window[untilKey]-Date.now())/1000);
+    if(left>0){btn.disabled=true;btn.textContent='RINVIA TRA '+left+'s';setTimeout(tick,1000)}
+    else{btn.disabled=false;btn.textContent=label}
+  };
+  tick();
+}
+
+async function redownloadRequest(){
+  try{
+    await call('redownload_request',{email:reEmail.value});
+    msg('remsg','Codice inviato alla tua email. Inseriscilo e conferma.');
+    startCooldown(reSendBtn,'reData','INVIA CODICE');
+  }catch(e){msg('remsg',e.message,false)}
+}
+async function redownloadConfirm(){
+  try{
+    const d=await call('redownload_confirm',{email:reEmail.value,code:reOtp.value});
+    msg('remsg','Download autorizzato. Trial invariata'+(d.demo_expires_at?' (scade '+d.demo_expires_at+')':'')+'.');
+    showDownload(d);
+  }catch(e){msg('remsg',e.message,false)}
+}
+
+async function sendEmail(){
+  try{
+    const d=await emailCall('send_magic_link');
+    if(d.already_verified){ev=true;renderVerify();unlockDocs();return}
+    msg('vermsg','Email inviata. Apri il link che hai ricevuto.');
+    startCooldown(emailSendBtn,'emailData','INVIA EMAIL');
+  }catch(e){msg('vermsg',e.message,false)}
+}
+function renderVerify(){
+  emailPill.textContent=ev?'VERIFICATA':'DA VERIFICARE';
+  emailPill.className='pill'+(ev?' good':'');
+  msg('vermsg',ev?'Email verificata. Puoi continuare.':'Email non verificata',ev);
+}
+function unlockDocs(){docsCard.classList.toggle('hidden',!ev)}
+async function verifyEmailReturn(){
+  if(!emailReturn||!cid||!reg)return;
+  try{
+    const h=new URLSearchParams(location.hash.replace(/^#/,''));
+    const access=h.get('access_token');
+    const d=await emailCall('verify_access_token',{access_token:access});
+    ev=!!d.email_verified;sessionStorage.setItem('tox_flow_active','1');
+    history.replaceState(null,'',location.pathname+location.search);
+    verifyCard.classList.remove('hidden');renderVerify();unlockDocs();
+  }catch(e){msg('vermsg','Verifica email non riuscita: '+e.message,false)}
+}
+async function acceptDocs(){
+  if(![c1,c2,c3,c4].every(x=>x.checked)){msg('docsmsg','Accetta tutti i punti per continuare.',false);return}
+  try{
+    const d=await call('accept_documents',{client_id:cid,registration_token:reg});
+    msg('docsmsg','Perfetto. Il download è pronto.');
+    showDownload(d);
+  }catch(e){msg('docsmsg',e.message,false)}
+}
+async function copyCode(){
+  const t=activationCode.textContent.trim();if(!t)return;
+  try{await navigator.clipboard.writeText(t);copyBtn.textContent='COPIATO ✓';setTimeout(()=>copyBtn.textContent='COPIA CODICE',1800)}
+  catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();copyBtn.textContent='COPIATO ✓'}
+}
+async function resumeCurrentFlow(){
+  if(!sessionStorage.getItem('tox_flow_active')||!cid||!reg)return;
+  try{
+    const d=await call('status',{client_id:cid,registration_token:reg});
+    ev=d.email_verified;verifyCard.classList.remove('hidden');renderVerify();unlockDocs();
+  }catch(e){}
+}
+(async()=>{if(emailReturn)await verifyEmailReturn();else await resumeCurrentFlow()})();
+</script>
+</body>
+</html>
